@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"todo-list/common"
+	itemstorage "todo-list/module/item/storage"
 	"todo-list/module/userlikeitem/biz"
 	"todo-list/module/userlikeitem/storage"
 
@@ -23,7 +24,8 @@ func UnLikeItem(db *gorm.DB) func(*gin.Context) {
 		requester := c.MustGet(common.CurrentUser).(common.Requester) // lấy curent user. đưa về requester
 
 		store := storage.NewSQLStore(db)
-		business := biz.NewUserUnLikeItemBiz(store)
+		itemStore := itemstorage.NewSQLStore(db)
+		business := biz.NewUserUnLikeItemBiz(store, itemStore)
 
 		if err := business.UnLikeItem(c.Request.Context(), requester.GetUserId(), id); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{

@@ -101,6 +101,7 @@ type TodoItem struct {
 	Description string        `json:"description" gorm:"column:description;"`
 	Status      *ItemStatus   `json:"status" gorm:"column:status;"`
 	Image       *common.Image `json:"image" gorm:"column:image;"`
+	LikedCount  int           `json:"liked_count" gorm: "-"`
 	// image
 	IntExample    int               `json:"int_example" gorm:"column:int_example;"`
 	DoubleExample float64           `json:"double_example" gorm:"column:double_example;"`
