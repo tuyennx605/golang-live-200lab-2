@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"todo-list/common"
+	itemstorage "todo-list/module/item/storage"
 	"todo-list/module/userlikeitem/biz"
 	"todo-list/module/userlikeitem/model"
 	"todo-list/module/userlikeitem/storage"
@@ -24,7 +25,8 @@ func LikeItem(db *gorm.DB) func(*gin.Context) {
 		requester := c.MustGet(common.CurrentUser).(common.Requester) // lấy curent user. đưa về requester
 
 		store := storage.NewSQLStore(db)
-		business := biz.NewUserLikeItemBiz(store)
+		itemStore := itemstorage.NewSQLStore(db)
+		business := biz.NewUserLikeItemBiz(store, itemStore)
 
 		if err := business.LikeItem(c.Request.Context(), &model.Like{
 			UserId: requester.GetUserId(),

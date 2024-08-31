@@ -2,8 +2,11 @@ package storage
 
 import (
 	"context"
+	"strconv"
 	"todo-list/common"
 	"todo-list/module/item/model"
+
+	"github.com/btcsuite/btcutil/base58"
 )
 
 func (s *sqlStore) ListItem(ctx context.Context, filter *model.Filter, paging *common.Paging, moreKeys ...string) ([]model.TodoItem, error) {
@@ -29,8 +32,21 @@ func (s *sqlStore) ListItem(ctx context.Context, filter *model.Filter, paging *c
 		db = db.Preload(moreKeys[i])
 	}
 
-	if err := db.Select("*").Order("id desc").Limit(paging.Limit).Offset((paging.Page - 1) * paging.Limit).Find(&result).Error; err != nil {
+	// Seek Paging
+	if v := paging.FakeCursor; v != "" {
+		id := base58.Decode(v)
+		db = db.Where("id < ?", id)
+	} else {
+		db = db.Offset((paging.Page - 1) * paging.Limit)
+	}
+
+	// if err := db.Select("*").Order("id desc").Limit(paging.Limit).Offset((paging.Page - 1) * paging.Limit).Find(&result).Error; err != nil {
+	if err := db.Select("*").Order("id desc").Limit(paging.Limit).Find(&result).Error; err != nil {
 		return nil, common.ErrDB(err)
+	}
+
+	if len(result) > 0 {
+		paging.NextCursor = base58.Encode([]byte(strconv.Itoa(result[len(result)-1].Id)))
 	}
 
 	return result, nil
