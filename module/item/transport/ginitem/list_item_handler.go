@@ -7,7 +7,7 @@ import (
 	"todo-list/module/item/model"
 	"todo-list/module/item/repository"
 	"todo-list/module/item/storage"
-	userlikestore "todo-list/module/userlikeitem/storage"
+	"todo-list/module/item/storage/resapi"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -30,8 +30,15 @@ func ListItem(db *gorm.DB) func(*gin.Context) {
 		queryString.Paging.Process()
 		requester := c.MustGet(common.CurrentUser).(common.Requester) // lấy curent user. đưa về requester
 
+		// old : internal call
+		// store := storage.NewSQLStore(db)
+		// likeStore := userlikestore.NewSQLStore(db)
+		// repo := repository.NewListItemRepo(store, likeStore, requester)
+		// business := biz.NewListItemRepo(repo, requester)
+
+		// new: call multiple service
 		store := storage.NewSQLStore(db)
-		likeStore := userlikestore.NewSQLStore(db)
+		likeStore := resapi.New("http://localhost:3005")
 		repo := repository.NewListItemRepo(store, likeStore, requester)
 		business := biz.NewListItemRepo(repo, requester)
 
