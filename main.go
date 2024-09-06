@@ -92,6 +92,11 @@ func runService(db *gorm.DB) error {
 			items.DELETE("/:id/unlike", middlewareAuth, ginuserlikeitem.UnLikeItem(db))
 			items.GET("/:id/liked-users", middlewareAuth, ginuserlikeitem.ListUserLikeItem(db))
 		}
+
+		rpc := v1.Group("/rpc")
+		{
+			rpc.POST("/get_item_likes", ginuserlikeitem.GetItemLikes(db))
+		}
 	}
 
 	return r.Run(":3005") // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
