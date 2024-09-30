@@ -1,19 +1,25 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"todo-list/component/tokenprovider/jwt"
+	"todo-list/demogrpc/demo"
 	"todo-list/middleware"
 	"todo-list/module/item/transport/ginitem"
 	"todo-list/module/upload"
 	"todo-list/module/user/storage"
 	usergin "todo-list/module/user/transport/gin"
+	userlikeitemstore "todo-list/module/userlikeitem/storage"
 	ginuserlikeitem "todo-list/module/userlikeitem/transport/gin"
+	"todo-list/module/userlikeitem/transport/rpc"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"google.golang.org/grpc"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -49,6 +55,29 @@ func runService(db *gorm.DB) error {
 
 	// đặt folder là static public
 	r.Static("/static", "./static")
+
+	/////// setup RGPC server
+
+	address := "0.0.0.0:50051"
+	lis, err := net.Listen("tcp", address)
+
+	if err != nil {
+		log.Fatalf("Error %v", err)
+	}
+	fmt.Printf("Server is listening on %v ...", address)
+
+	s := grpc.NewServer()
+
+	store := userlikeitemstore.NewSQLStore(db)
+	demo.RegisterItemLikeServiceServer(s, rpc.NewRPCService(store))
+
+	go func() {
+		if err := s.Serve(lis); err != nil {
+			log.Fatalln(err)
+		}
+	}()
+
+	//// end setup RGPC server
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{

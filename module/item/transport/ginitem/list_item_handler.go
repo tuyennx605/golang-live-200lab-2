@@ -7,7 +7,7 @@ import (
 	"todo-list/module/item/model"
 	"todo-list/module/item/repository"
 	"todo-list/module/item/storage"
-	"todo-list/module/item/storage/resapi"
+	"todo-list/module/item/storage/rpc"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -36,9 +36,15 @@ func ListItem(db *gorm.DB) func(*gin.Context) {
 		// repo := repository.NewListItemRepo(store, likeStore, requester)
 		// business := biz.NewListItemRepo(repo, requester)
 
-		// new: call multiple service
+		// // new: call multiple service call = resful api
+		// store := storage.NewSQLStore(db)
+		// likeStore := resapi.New("http://localhost:3005")
+		// repo := repository.NewListItemRepo(store, likeStore, requester)
+		// business := biz.NewListItemRepo(repo, requester)
+
+		// new: call multiple service call = GRPC
 		store := storage.NewSQLStore(db)
-		likeStore := resapi.New("http://localhost:3005")
+		likeStore := rpc.NewClient()
 		repo := repository.NewListItemRepo(store, likeStore, requester)
 		business := biz.NewListItemRepo(repo, requester)
 

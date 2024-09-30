@@ -1,0 +1,44 @@
+install protobuf: https://grpc.io/docs/protoc-installation/
+
+
+install:  https://grpc-ecosystem.github.io/grpc-gateway/docs/tutorials/introduction/
+$ go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
+$ go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+$ go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+- tao file : item_like.proto
+
+- generate:
+  c1: https://grpc-ecosystem.github.io/grpc-gateway/docs/tutorials/generating_stubs/using_protoc/
+  c2: https://grpc-ecosystem.github.io/grpc-gateway/docs/tutorials/generating_stubs/using_buf/
+
+  -> nen lam cach 2:
+    60
+          Install the Go library using:
+            go get -u github.com/golang/protobuf/{proto,protoc-gen-go}
+            Run sudo nano ~/.bash_profile
+          Add:
+            export GO_PATH=~/go
+            export PATH=$PATH:/$GO_PATH/bin
+          Run source ~/.zshrc
+    - install buf truoc: https://buf.build/docs/installation/
+    - tạo file buf.yaml 
+            version: v1
+            name: buf.build/tenuser/ten-repo
+    - tao file : buf.gen.yaml
+            version: v1
+            plugins:
+              - plugin: go
+                out: proto
+                opt: paths=source_relative
+              - plugin: go-grpc
+                out: proto
+                opt: paths=source_relative,require_unimplemented_servers=false
+
+        + source_relative: là lấy đúng đường dẫn file để  làm root + out để  generate ra file 
+            + import : nó sẽ lấy go_package là root 
+
+        
+  - run: npx buf ls-files    -> để xem load đc các file ra chưa
+  - run: npx buf generate   để genẻâte file
+  -> vào check 2 file đó thiếu package nào thì import nó: VD: go get google.golang.org/grpc
